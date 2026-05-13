@@ -82,8 +82,37 @@ const getUserService = async () => {
   }
 };
 
+const getCurrentUserService = async (email1) => {
+  try {
+    console.log(email1)
+    const user = await User.findOne({ email: email1 }).select("-password");
+    
+    if (user) {
+      return {
+        EC: 0,
+        EM: "Lấy thông tin user thành công",
+        user: user
+      };
+    } else {
+      return {
+        EC: 1,
+        EM: "User không tồn tại",
+        user: null
+      };
+    }
+  } catch (error) {
+    console.log(error);
+    return {
+      EC: -1,
+      EM: "Lỗi hệ thống",
+      user: null
+    };
+  }
+};
+
 module.exports = {
   createUserService,
   loginService,
   getUserService,
+  getCurrentUserService,
 };
