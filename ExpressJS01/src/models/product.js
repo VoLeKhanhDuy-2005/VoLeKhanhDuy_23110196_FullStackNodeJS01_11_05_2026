@@ -24,7 +24,6 @@ const productSchema = new mongoose.Schema(
       type: Number, // Giá sau khi giảm
       default: 0,
     },
-    // Chứa nhiều hình ảnh để dùng với Swiper ở Frontend
     images: [
       {
         type: String,
@@ -44,6 +43,9 @@ const productSchema = new mongoose.Schema(
     sold: {
       type: Number,
       default: 0, // Số lượng đã bán được
+    },
+    rating: {
+      type: Number,
     },
     isHot: {
       type: Boolean,

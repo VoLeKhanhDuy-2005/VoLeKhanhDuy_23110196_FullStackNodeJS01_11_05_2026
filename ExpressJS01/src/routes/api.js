@@ -9,14 +9,14 @@ const {
 const {
   searchProducts,
   getHomePageProducts,
-} = require("../controllers/productController")
-const { getActivePromotions } = require("../controllers/promotionController");
+  getProductDetail,
+} = require("../controllers/productController");
 const auth = require("../middleware/auth");
 const delay = require("../middleware/delay");
 
 const routerAPI = express.Router();
 
-routerAPI.all(/(.*)/, auth);// (.*) phiên bản mới
+routerAPI.all(/(.*)/, auth); // (.*) phiên bản mới
 
 routerAPI.get("/", (req, res) => {
   return res.status(200).json("Hello world api");
@@ -29,7 +29,8 @@ routerAPI.get("/user", getUser);
 routerAPI.get("/user/me", getCurrentUser);
 routerAPI.get("/account", delay, getAccount);
 
-routerAPI.get("/products", getHomePageProducts)
-routerAPI.get("/promotions/active", getActivePromotions);
+routerAPI.get("/products", getHomePageProducts);
+routerAPI.get("/products/search", searchProducts);
+routerAPI.get("/products/:id", getProductDetail);
 
-module.exports = routerAPI; //export default
+module.exports = routerAPI;

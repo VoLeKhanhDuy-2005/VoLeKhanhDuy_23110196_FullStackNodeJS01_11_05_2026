@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Header from "./components/layout/header";
-import axios from "./util/axios.customize";
+import { getCurrentUserApi } from "./util/api";
 import { useContext, useEffect } from "react";
 import { AuthContext } from "./components/context/auth.context";
 import { Spin } from "antd";
@@ -11,13 +11,13 @@ function App() {
   useEffect(() => {
     const fetchAccount = async () => {
       setAppLoading(true);
-      const res = await axios.get("/v1/api/user");
-      if (res && !res.message) {
+      const res = await getCurrentUserApi();
+      if (res && res.EC === 0 && res.user) {
         setAuth({
           isAuthenticated: true,
           user: {
-            email: res.email,
-            name: res.name,
+            email: res.user.email,
+            name: res.user.name,
           },
         });
       }

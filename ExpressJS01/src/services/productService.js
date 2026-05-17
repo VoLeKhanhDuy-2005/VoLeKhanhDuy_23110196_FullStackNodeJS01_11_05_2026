@@ -1,17 +1,80 @@
-const Product = require('../models/product');
+const Product = require("../models/product");
 
 const getHomePageProducts = async () => {
-    const [newestProducts, bestSellingProducts, promotionalProducts] = await Promise.all([
-        Product.find().sort({ createdAt: -1 }).limit(8),
-        Product.find({ isHot: true }).sort({ sold: -1 }).limit(8),
-        Product.find({ discountPrice: { $gt: 0 } }).limit(4)
+  const [newestProducts, bestSellingProducts, promotionalProducts] =
+    await Promise.all([
+      Product.find().sort({ createdAt: -1 }).limit(8),
+      Product.find({ isHot: true }).sort({ sold: -1 }).limit(8),
+      Product.find({ discountPrice: { $gt: 0 } }).limit(12),
     ]);
-    
-    return {
-        newest: newestProducts,
-        bestSelling: bestSellingProducts,
-        promotions: promotionalProducts
-    };
+
+  return {
+    newest: newestProducts,
+    bestSelling: bestSellingProducts,
+    promotions: promotionalProducts,
+  };
 };
 
-module.exports = { getHomePageProducts };
+const getProductsWithFilters = async (query) => {
+  const {
+    search,
+    category,
+    minPrice,
+    maxPrice,
+    sort,
+    page = 1,
+    limit = 12,
+  } = query;
+
+  const filter = {};
+  if (search) {
+    filter.name = { $regex: search, $options: "i" };
+  }
+  if (category) {
+    filter.category = category;
+  }
+  if (minPrice || maxPrice) {
+    filter.price = {};
+    if (minPrice) filter.price.$gte = Number(minPrice);
+    if (maxPrice) filter.price.$lte = Number(maxPrice);
+  }
+
+  let sortObj = { createdAt: -1 };
+  if (sort) {
+    if (sort === "price-asc") sortObj = { price: 1 };
+    if (sort === "price-desc") sortObj = { price: -1 };
+    if (sort === "newest") sortObj = { createdAt: -1 };
+    if (sort === "bestselling") sortObj = { sold: -1 };
+  }
+
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const [products, total] = await Promise.all([
+    Product.find(filter).sort(sortObj).skip(skip).limit(Number(limit)),
+    Product.countDocuments(filter),
+  ]);
+
+  return {
+    products,
+    total,
+    page: Number(page),
+    totalPages: Math.ceil(total / Number(limit)),
+  };
+};
+
+const getProductById = async (id) => {
+  const product = await Product.findById(id);
+  if (!product) throw new Error("Sản phẩm không tồn tại");
+  return product;
+};
+
+const getRelatedProducts = async (id, category) => {
+  return await Product.find({ category, _id: { $ne: id } }).limit(4);
+};
+
+module.exports = {
+  getHomePageProducts,
+  getProductsWithFilters,
+  getProductById,
+  getRelatedProducts,
+};
